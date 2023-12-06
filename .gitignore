@@ -1,0 +1,6 @@
+# Ignore Visual Studio's .vs directory
+.vs/
+
+# Ignore solution and project files (you may customize this further)
+*.sln
+*.csproj

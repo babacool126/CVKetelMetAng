@@ -1,0 +1,6 @@
+@CVKetelMetAng_HostAddress = http://localhost:5296
+
+GET {{CVKetelMetAng_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
