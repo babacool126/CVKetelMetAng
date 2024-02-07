@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CVKetelMetAng.Data;
 using CVKetelMetAng.Models;
+using Microsoft.Extensions.Logging;
 
 namespace CVKetelMetAng.Controllers
 {
@@ -15,24 +16,26 @@ namespace CVKetelMetAng.Controllers
     public class AfspraaksController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AfspraaksController> _logger;
 
-        public AfspraaksController(ApplicationDbContext context)
+        public AfspraaksController(ApplicationDbContext context, ILogger<AfspraaksController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Afspraaks
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Afspraak>>> GetAfspraken()
         {
-            return await _context.Afspraken.ToListAsync();
+            return await _context.Afspraken.Include(a => a.Klant).ToListAsync();
         }
 
         // GET: api/Afspraaks/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Afspraak>> GetAfspraak(int id)
         {
-            var afspraak = await _context.Afspraken.FindAsync(id);
+            var afspraak = await _context.Afspraken.Include(a => a.Klant).FirstOrDefaultAsync(a => a.Id == id);
 
             if (afspraak == null)
             {
@@ -78,10 +81,29 @@ namespace CVKetelMetAng.Controllers
         [HttpPost]
         public async Task<ActionResult<Afspraak>> PostAfspraak(Afspraak afspraak)
         {
+            _logger.LogInformation("Creating a new afspraak for KlantId: {KlantId}", afspraak.KlantId);
+
+
+            // Check if the KlantId corresponds to an existing Klant
+            var klantexists = await _context.Klanten.AnyAsync(k => k.Id == afspraak.KlantId);
+            if (!klantexists)
+            {
+                _logger.LogWarning("No Klant found with ID: {KlantId}", afspraak.KlantId);
+                return NotFound($"no klant found with id {afspraak.KlantId}.");
+            }
+
             _context.Afspraken.Add(afspraak);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAfspraak", new { id = afspraak.Id }, afspraak);
+            // Return the created Afspraak, including the Klant data
+            //var createdAfspraak = await _context.Afspraken
+            //    .Include(a => a.Klant)
+            //    .FirstOrDefaultAsync(a => a.Id == afspraak.Id);
+
+            _logger.LogInformation("Afspraak created successfully for KlantId: {KlantId}", afspraak.KlantId);
+
+
+            return CreatedAtAction(nameof(GetAfspraak), new { id = afspraak.Id }, afspraak);
         }
 
         // DELETE: api/Afspraaks/5
