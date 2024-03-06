@@ -79,29 +79,23 @@ namespace CVKetelMetAng.Controllers
         // POST: api/Afspraaks
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Afspraak>> PostAfspraak(Afspraak afspraak)
+        public async Task<ActionResult<Afspraak>> PostAfspraak([FromBody] Afspraak afspraak)
         {
-            _logger.LogInformation("Creating a new afspraak for KlantId: {KlantId}", afspraak.KlantId);
-
-
-            // Check if the KlantId corresponds to an existing Klant
-            var klantexists = await _context.Klanten.AnyAsync(k => k.Id == afspraak.KlantId);
-            if (!klantexists)
+            if (afspraak.KlantId > 0 && afspraak.Klant != null)
             {
-                _logger.LogWarning("No Klant found with ID: {KlantId}", afspraak.KlantId);
-                return NotFound($"no klant found with id {afspraak.KlantId}.");
+                // If KlantId is provided, ignore the Klant object to prevent creating a new Klant
+                afspraak.Klant = null; // This prevents EF from creating a new Klant based on the nested object
             }
-
+            else if (afspraak.Klant != null)
+            {
+                // No KlantId provided but Klant object is present, create a new Klant
+                _context.Klanten.Add(afspraak.Klant);
+                await _context.SaveChangesAsync();
+                afspraak.KlantId = afspraak.Klant.Id; // Link the newly created Klant to the Afspraak
+            }
+            // Continue with the assumption that either a KlantId was provided or a new Klant was created
             _context.Afspraken.Add(afspraak);
             await _context.SaveChangesAsync();
-
-            // Return the created Afspraak, including the Klant data
-            //var createdAfspraak = await _context.Afspraken
-            //    .Include(a => a.Klant)
-            //    .FirstOrDefaultAsync(a => a.Id == afspraak.Id);
-
-            _logger.LogInformation("Afspraak created successfully for KlantId: {KlantId}", afspraak.KlantId);
-
 
             return CreatedAtAction(nameof(GetAfspraak), new { id = afspraak.Id }, afspraak);
         }
