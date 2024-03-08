@@ -24,12 +24,26 @@ namespace CVKetelMetAng.Controllers
             _logger = logger;
         }
 
-        // GET: api/Afspraaks
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Afspraak>>> GetAfspraken()
+        public async Task<ActionResult<IEnumerable<object>>> GetAfspraken()
         {
-            return await _context.Afspraken.Include(a => a.Klant).ToListAsync();
+            var afspraken = await _context.Afspraken
+                .Include(a => a.Klant) // Make sure to include the Klant entity
+                .Select(a => new
+                {
+                    AfspraakId = a.Id,
+                    Soort = a.Soort,
+                    DatumTijd = a.DatumTijd,
+                    KlantId = a.KlantId,
+                    KlantNaam = a.Klant.Naam,
+                    KlantEmail = a.Klant.Email,
+                    KlantTelefoonnummer = a.Klant.Telefoonnummer
+                })
+                .ToListAsync();
+
+            return Ok(afspraken);
         }
+
 
         // GET: api/Afspraaks/5
         [HttpGet("{id}")]
@@ -76,24 +90,33 @@ namespace CVKetelMetAng.Controllers
             return NoContent();
         }
 
-        // POST: api/Afspraaks
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Afspraak>> PostAfspraak([FromBody] Afspraak afspraak)
         {
-            if (afspraak.KlantId > 0 && afspraak.Klant != null)
+            // Check if Klant already exists
+            var existingKlant = await _context.Klanten.FirstOrDefaultAsync(k => k.Email == afspraak.Klant.Email);
+            if (existingKlant == null)
             {
-                // If KlantId is provided, ignore the Klant object to prevent creating a new Klant
-                afspraak.Klant = null; // This prevents EF from creating a new Klant based on the nested object
-            }
-            else if (afspraak.Klant != null)
-            {
-                // No KlantId provided but Klant object is present, create a new Klant
-                _context.Klanten.Add(afspraak.Klant);
+                // Create new Klant if not exists
+                Klant newKlant = new Klant
+                {
+                    Naam = afspraak.Klant.Naam,
+                    Email = afspraak.Klant.Email,
+                    Telefoonnummer = afspraak.Klant.Telefoonnummer
+                };
+                _context.Klanten.Add(newKlant);
                 await _context.SaveChangesAsync();
-                afspraak.KlantId = afspraak.Klant.Id; // Link the newly created Klant to the Afspraak
+                afspraak.KlantId = newKlant.Id; // Set KlantId for the new appointment
             }
-            // Continue with the assumption that either a KlantId was provided or a new Klant was created
+            else
+            {
+                afspraak.KlantId = existingKlant.Id; // Use existing KlantId
+            }
+
+            // Clear Klant to avoid EF trying to create a new one due to navigation property
+            afspraak.Klant = null;
+
+            // Proceed to add the new Afspraak
             _context.Afspraken.Add(afspraak);
             await _context.SaveChangesAsync();
 
