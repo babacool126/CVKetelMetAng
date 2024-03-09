@@ -28,6 +28,13 @@ namespace CVKetelMetAng.Controllers
             return await _context.Klanten.ToListAsync();
         }
 
+        // GET: api/Klants/EmailExists?email=value
+        [HttpGet("EmailExists")]
+        public async Task<ActionResult<bool>> EmailExists(string email)
+        {
+            return await _context.Klanten.AnyAsync(klant => klant.Email == email);
+        }
+
         // GET: api/Klants/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Klant>> GetKlant(int id)
