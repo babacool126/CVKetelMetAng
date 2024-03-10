@@ -98,6 +98,38 @@ namespace CVKetelMetAng.Controllers
                 return BadRequest(ModelState);
             }
 
+
+            // Ensure the appointment date and time are in the future
+            if (model.AppointmentDateTime <= DateTime.Now)
+            {
+                return BadRequest("The appointment must be scheduled for a future date and time.");
+            }
+
+            // Weekday check
+            if (model.AppointmentDateTime.DayOfWeek == DayOfWeek.Saturday ||
+                model.AppointmentDateTime.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return BadRequest("Appointments can only be scheduled from Monday to Friday.");
+            }
+
+            // Time slot check (assuming model.AppointmentDateTime is in local time)
+            TimeSpan appointmentTime = model.AppointmentDateTime.TimeOfDay;
+            TimeSpan startTime = new TimeSpan(8, 0, 0); // 8 AM
+            TimeSpan endTime = new TimeSpan(18, 0, 0); // 6 PM
+            if (appointmentTime < startTime || appointmentTime > endTime)
+            {
+                return BadRequest("Appointments can only be scheduled between 8 AM and 6 PM.");
+            }
+
+            // Appointment count check (simplified example)
+            // This is a simplified example. You'll need to refine this to check for morning vs. afternoon slots.
+            int existingAppointmentsCount = await _context.Afspraken.CountAsync(
+                a => a.DatumTijd.Date == model.AppointmentDateTime.Date);
+            if (existingAppointmentsCount >= 4) // Assuming a total of 4 appointments per day as an example
+            {
+                return BadRequest("The maximum number of appointments for this day has been reached.");
+            }
+
             // Check if an appointment already exists for the given email
             bool appointmentExists = await _context.Afspraken
                 .AnyAsync(a => a.Klant.Email == model.CustomerEmail);
