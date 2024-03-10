@@ -98,6 +98,15 @@ namespace CVKetelMetAng.Controllers
                 return BadRequest(ModelState);
             }
 
+            // Check if an appointment already exists for the given email
+            bool appointmentExists = await _context.Afspraken
+                .AnyAsync(a => a.Klant.Email == model.CustomerEmail);
+
+            if (appointmentExists)
+            {
+                return BadRequest("An appointment with the given email address already exists.");
+            }
+
             Klant klant = await _context.Klanten.FirstOrDefaultAsync(k => k.Email == model.CustomerEmail);
 
             // If Klant does not exist, create a new one
@@ -107,7 +116,8 @@ namespace CVKetelMetAng.Controllers
                 {
                     Naam = model.CustomerName,
                     Email = model.CustomerEmail,
-                    Telefoonnummer = model.CustomerPhoneNumber
+                    Telefoonnummer = model.CustomerPhoneNumber,
+                    Adres = model.CustomerAddress
                 };
                 _context.Klanten.Add(klant);
                 await _context.SaveChangesAsync(); // Ensure the new Klant is saved immediately to generate an Id
