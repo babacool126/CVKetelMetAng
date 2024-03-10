@@ -91,35 +91,40 @@ namespace CVKetelMetAng.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Afspraak>> PostAfspraak([FromBody] Afspraak afspraak)
+        public async Task<IActionResult> PostAfspraak([FromBody] AppointmentCreationModel model)
         {
-            // Check if Klant already exists
-            var existingKlant = await _context.Klanten.FirstOrDefaultAsync(k => k.Email == afspraak.Klant.Email);
-            if (existingKlant == null)
+            if (!ModelState.IsValid)
             {
-                // Create new Klant if not exists
-                Klant newKlant = new Klant
+                return BadRequest(ModelState);
+            }
+
+            Klant klant = await _context.Klanten.FirstOrDefaultAsync(k => k.Email == model.CustomerEmail);
+
+            // If Klant does not exist, create a new one
+            if (klant == null)
+            {
+                klant = new Klant
                 {
-                    Naam = afspraak.Klant.Naam,
-                    Email = afspraak.Klant.Email,
-                    Telefoonnummer = afspraak.Klant.Telefoonnummer
+                    Naam = model.CustomerName,
+                    Email = model.CustomerEmail,
+                    Telefoonnummer = model.CustomerPhoneNumber
                 };
-                _context.Klanten.Add(newKlant);
-                await _context.SaveChangesAsync();
-                afspraak.KlantId = newKlant.Id; // Set KlantId for the new appointment
+                _context.Klanten.Add(klant);
+                await _context.SaveChangesAsync(); // Ensure the new Klant is saved immediately to generate an Id
             }
-            else
+
+            // At this point, klant.Id is guaranteed to be set, whether the Klant was just created or already existed.
+            var afspraak = new Afspraak
             {
-                afspraak.KlantId = existingKlant.Id; // Use existing KlantId
-            }
+                KlantId = klant.Id,
+                Soort = model.AppointmentType,
+                DatumTijd = model.AppointmentDateTime
+            };
 
-            // Clear Klant to avoid EF trying to create a new one due to navigation property
-            afspraak.Klant = null;
-
-            // Proceed to add the new Afspraak
             _context.Afspraken.Add(afspraak);
             await _context.SaveChangesAsync();
 
+            // Return a response indicating success and providing the location of the new afspraak
             return CreatedAtAction(nameof(GetAfspraak), new { id = afspraak.Id }, afspraak);
         }
 

@@ -16,6 +16,9 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         // Fluent API configuraties indien nodig
+        modelBuilder.Entity<Klant>()
+            .HasIndex(k => k.Email)
+            .IsUnique();
     }
 }
 

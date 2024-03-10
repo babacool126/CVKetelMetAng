@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CVKetelMetAng.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class NewInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,9 +17,10 @@ namespace CVKetelMetAng.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Naam = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Telefoonnummer = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Naam = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Telefoonnummer = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Adres = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -51,6 +52,12 @@ namespace CVKetelMetAng.Migrations
                 name: "IX_Afspraken_KlantId",
                 table: "Afspraken",
                 column: "KlantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Klanten_Email",
+                table: "Klanten",
+                column: "Email",
+                unique: true);
         }
 
         /// <inheritdoc />
