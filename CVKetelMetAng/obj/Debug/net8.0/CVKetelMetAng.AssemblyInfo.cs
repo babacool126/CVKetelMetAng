@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CVKetelMetAng")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7e384ebb5ce94795bda05d65e063b51b02f0bd61")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e415c4cb47363baf8a88b3dccfb82803e3d18f40")]
 [assembly: System.Reflection.AssemblyProductAttribute("CVKetelMetAng")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CVKetelMetAng")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

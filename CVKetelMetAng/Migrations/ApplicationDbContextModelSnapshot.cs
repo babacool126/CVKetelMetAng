@@ -85,12 +85,17 @@ namespace CVKetelMetAng.Migrations
             modelBuilder.Entity("CVKetelMetAng.Models.Afspraak", b =>
                 {
                     b.HasOne("CVKetelMetAng.Models.Klant", "Klant")
-                        .WithMany()
+                        .WithMany("Afspraken")
                         .HasForeignKey("KlantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Klant");
+                });
+
+            modelBuilder.Entity("CVKetelMetAng.Models.Klant", b =>
+                {
+                    b.Navigation("Afspraken");
                 });
 #pragma warning restore 612, 618
         }

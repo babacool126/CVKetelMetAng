@@ -19,6 +19,8 @@ namespace CVKetelMetAng.Models
         public string Telefoonnummer { get; set; }
 
         [MaxLength(200)]
-        public string Adres { get; set; } // New field
+        public string Adres { get; set; }
+
+        public ICollection<Afspraak> Afspraken { get; set; } = new List<Afspraak>();
     }
 }

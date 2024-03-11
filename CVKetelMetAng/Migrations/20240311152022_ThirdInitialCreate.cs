@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CVKetelMetAng.Migrations
 {
     /// <inheritdoc />
-    public partial class NewInitialCreate : Migration
+    public partial class ThirdInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
