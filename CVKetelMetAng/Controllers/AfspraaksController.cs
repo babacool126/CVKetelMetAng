@@ -37,7 +37,8 @@ namespace CVKetelMetAng.Controllers
                     KlantId = a.KlantId,
                     KlantNaam = a.Klant.Naam,
                     KlantEmail = a.Klant.Email,
-                    KlantTelefoonnummer = a.Klant.Telefoonnummer
+                    KlantTelefoonnummer = a.Klant.Telefoonnummer,
+                    KlantAdres = a.Klant.Adres
                 })
                 .ToListAsync();
 
@@ -62,7 +63,7 @@ namespace CVKetelMetAng.Controllers
         // PUT: api/Afspraaks/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAfspraak(int id, Afspraak afspraak)
+        public async Task<IActionResult> PutAfspraak(int id, [FromBody] Afspraak afspraak)
         {
             if (id != afspraak.Id)
             {
@@ -121,8 +122,7 @@ namespace CVKetelMetAng.Controllers
                 return BadRequest("Appointments can only be scheduled between 8 AM and 6 PM.");
             }
 
-            // Appointment count check (simplified example)
-            // This is a simplified example. You'll need to refine this to check for morning vs. afternoon slots.
+            // Appointment count check
             int existingAppointmentsCount = await _context.Afspraken.CountAsync(
                 a => a.DatumTijd.Date == model.AppointmentDateTime.Date);
             if (existingAppointmentsCount >= 4) // Assuming a total of 4 appointments per day as an example
