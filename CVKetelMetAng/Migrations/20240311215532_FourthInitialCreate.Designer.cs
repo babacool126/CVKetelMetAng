@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CVKetelMetAng.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240311152022_ThirdInitialCreate")]
-    partial class ThirdInitialCreate
+    [Migration("20240311215532_FourthInitialCreate")]
+    partial class FourthInitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
