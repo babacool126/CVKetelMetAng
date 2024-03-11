@@ -130,48 +130,47 @@ namespace CVKetelMetAng.Controllers
                 return BadRequest("The maximum number of appointments for this day has been reached.");
             }
 
-            // Check if an appointment already exists for the given email
-            bool appointmentExists = await _context.Afspraken
-                .AnyAsync(a => a.Klant.Email == model.CustomerEmail);
+            var existingKlant = await _context.Klanten.FirstOrDefaultAsync(k => k.Email == model.CustomerEmail);
 
-            if (appointmentExists)
+            // If Klant exists, proceed to create a new Afspraak for them
+            if (existingKlant != null)
             {
-                return BadRequest("An appointment with the given email address already exists.");
-            }
-
-            // Find Klant by email
-            Klant klant = await _context.Klanten
-                .Include(k => k.Afspraken) // Assuming Afspraken is now a navigation property in Klant
-                .FirstOrDefaultAsync(k => k.Email == model.CustomerEmail);
-
-            // Check if the Klant exists and has previous appointments
-            if (klant != null && klant.Afspraken.Any())
-            {
-                // Klant exists and has made at least one Afspraak; proceed to create a new Afspraak
-
+                // Create a new Afspraak for the existing Klant
                 var afspraak = new Afspraak
                 {
-                    KlantId = klant.Id,
+                    KlantId = existingKlant.Id,
                     Soort = model.AppointmentType,
                     DatumTijd = model.AppointmentDateTime
                 };
 
                 _context.Afspraken.Add(afspraak);
                 await _context.SaveChangesAsync();
-
-                // Return a response indicating success
                 return CreatedAtAction(nameof(GetAfspraak), new { id = afspraak.Id }, afspraak);
-            }
-            else if (klant == null)
-            {
-                // If Klant does not exist, optionally handle creating a new Klant here if desired
-                // For now, we return BadRequest indicating the Klant must exist and have previous appointments
-                return BadRequest("The customer does not exist or has no previous appointments.");
             }
             else
             {
-                // Klant exists but has no appointments; refuse to create a new appointment
-                return BadRequest("An appointment can only be made if the customer has previous appointments.");
+                // If Klant does not exist, create a new Klant and Afspraak
+                var newKlant = new Klant
+                {
+                    Naam = model.CustomerName,
+                    Email = model.CustomerEmail,
+                    Telefoonnummer = model.CustomerPhoneNumber,
+                    Adres = model.CustomerAddress
+                };
+
+                _context.Klanten.Add(newKlant);
+                await _context.SaveChangesAsync(); // Save to ensure newKlant gets an ID
+
+                var newAfspraak = new Afspraak
+                {
+                    KlantId = newKlant.Id,
+                    Soort = model.AppointmentType,
+                    DatumTijd = model.AppointmentDateTime
+                };
+
+                _context.Afspraken.Add(newAfspraak);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(GetAfspraak), new { id = newAfspraak.Id }, newAfspraak);
             }
         }
 
