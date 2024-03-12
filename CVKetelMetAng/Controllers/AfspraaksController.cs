@@ -125,7 +125,7 @@ namespace CVKetelMetAng.Controllers
             // Appointment count check
             int existingAppointmentsCount = await _context.Afspraken.CountAsync(
                 a => a.DatumTijd.Date == model.AppointmentDateTime.Date);
-            if (existingAppointmentsCount >= 4) // Assuming a total of 4 appointments per day as an example
+            if (existingAppointmentsCount >= 4)
             {
                 return BadRequest("The maximum number of appointments for this day has been reached.");
             }
@@ -159,7 +159,7 @@ namespace CVKetelMetAng.Controllers
                 };
 
                 _context.Klanten.Add(newKlant);
-                await _context.SaveChangesAsync(); // Save to ensure newKlant gets an ID
+                await _context.SaveChangesAsync();
 
                 var newAfspraak = new Afspraak
                 {
