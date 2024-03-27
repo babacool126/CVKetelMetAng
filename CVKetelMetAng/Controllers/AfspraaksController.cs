@@ -28,7 +28,7 @@ namespace CVKetelMetAng.Controllers
         public async Task<ActionResult<IEnumerable<object>>> GetAfspraken()
         {
             var afspraken = await _context.Afspraken
-                .Include(a => a.Klant) // Make sure to include the Klant entity
+                .Include(a => a.Klant)
                 .Select(a => new
                 {
                     AfspraakId = a.Id,
