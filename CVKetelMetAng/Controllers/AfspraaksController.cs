@@ -63,14 +63,19 @@ namespace CVKetelMetAng.Controllers
         // PUT: api/Afspraaks/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAfspraak(int id, [FromBody] Afspraak afspraak)
+        public async Task<IActionResult> PutAfspraak(int id, [FromBody] AfspraakUpdateDTO updateDTO)
         {
-            if (id != afspraak.Id)
+            // Find the existing afspraak from the database
+            var afspraak = await _context.Afspraken.FindAsync(id);
+            if (afspraak == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(afspraak).State = EntityState.Modified;
+            // Update the properties of afspraak with values from the DTO
+            afspraak.Soort = (SoortAfspraak)updateDTO.Soort;
+            afspraak.DatumTijd = updateDTO.DatumTijd;
+            // Apply updates for other properties as needed
 
             try
             {
